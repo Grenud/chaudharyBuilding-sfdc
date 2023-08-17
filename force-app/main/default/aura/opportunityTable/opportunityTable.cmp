@@ -1,0 +1,48 @@
+<aura:component controller="opportunityControllerData" implements="force:appHostable,flexipage:availableForAllPageTypes,force:hasRecordId">
+    
+    <aura:handler name="init" action="{!c.doInit}" value="{!this}"/>
+    
+    <aura:attribute name="recordId" type="String" />
+    
+    <aura:attribute name="opportunityList" type="Opportunity[]" />
+    
+    <table class="slds-table slds-table_cell-buffer slds-table_bordered" aria-labelledby="element-with-table-label other-element-with-table-label">
+        <thead>
+            <tr >
+                <th scope="col">Sr No.</th>
+                <th scope="col">Opportunity Name</th>
+                <th scope="col">Close date</th>
+                <th scope="col">Stage</th>
+            </tr>
+        </thead>
+        <tbody>
+            <aura:iteration items="{!v.opportunityList}" var="item" indexVar="index">
+                
+                <tr>
+                    <td>
+                        <div class="slds-truncate">{!index+1}</div>
+                    </td>
+                    <td>
+                        <div class="slds-truncate">
+                            <a href="#" tabindex="-1">{!item.Name}</a>
+                        </div>
+                    </td>
+                    <td>
+                        <div class="slds-truncate">{!item.CloseDate}</div>
+                    </td>
+                    <td>
+                        <div class="slds-truncate" title="Prospecting">{!item.StageName}</div>
+                    </td>
+                </tr>
+                
+            </aura:iteration>
+            <br/>
+            
+        </tbody>
+        <div class="slds-truncate">
+        <lightning:button label="New" variant="brand-outline" onclick="{!c.newOpp}" />
+        </div>
+        <br/>
+        <br/>
+    </table>
+</aura:component>

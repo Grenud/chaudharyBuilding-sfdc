@@ -1,0 +1,194 @@
+<aura:component controller="CustomerBillingClass" implements="force:appHostable,flexipage:availableForAllPageTypes,flexipage:availableForRecordHome,force:hasRecordId,forceCommunity:availableForAllPageTypes,force:lightningQuickAction" access="global" >
+    <aura:attribute name="CustomerDetailList" type="Customer_Item__c[]" />
+    <aura:attribute name="customerId" type="String" />
+    <aura:attribute name="Productiteam" type="string"/>
+    <aura:attribute name="ProductPrice" type="Integer"/>
+    <aura:attribute name="ProductQuantity" type="Integer"/>
+    <aura:attribute name="TotalPrice" type="Integer"/>
+    <aura:attribute name="GrandTotalPrice" type="Integer"/>
+    <aura:attribute name="CustomerName" type="string"/>
+    <aura:attribute name="Phone" type="string"/>
+    <aura:attribute name="Email" type="string"/>
+    <aura:attribute name="Address" type="string"/>
+    <aura:attribute name="Datetime" type="datetime"/>
+    <aura:attribute name="Signature" type="string"/>
+    <aura:attribute name="buttonHide" type="boolean" default="true"/>
+    <aura:attribute name="buttonHideprint" type="boolean" default="true"/>
+    <aura:attribute name="buttonHideTotal" type="boolean" default="true"/>
+    <aura:attribute name="setDefault" type="String" default="XXXXXX22331XXX" />
+    <aura:attribute name="billrecords" type="Integer"/>
+    <aura:attribute name="hideitemrow" type="boolean" default="false"/>
+     <aura:handler  name="init" value="{!this}" action="{!c.doinit}"/>
+    <!--component attributs -->
+    <aura:attribute name="spinner" type="boolean" default="false"/>
+    <!--loading spinner start-->
+    <aura:if isTrue="{!v.spinner}">
+        <div aura:id="spinnerId" class="slds-spinner_container">
+            <div class="slds-spinner--brand  slds-spinner slds-spinner--large slds-is-relative" role="alert">
+                <span class="slds-assistive-text">Loading...</span>
+                <div class="slds-spinner__dot-a"></div>
+                <div class="slds-spinner__dot-b"></div>
+            </div>
+        </div>
+    </aura:if>
+    <!--loading spinner end-->
+    
+    <!--Html Style -->
+    <aura:html tag="style">
+        .slds-modal__header{background-color:white;}
+        .navexStandardManager{background-color:white!important;}
+        .header{margin-top: -10px; font-size: 16px;}
+        .TotalPriceField{margin-top: -14px; alignment:right;}
+        .right{position: absolute; right: 0px;}
+        .gstno{text-align: center; margin-top:20px;position:absolute;right:50px;}
+        .address{position: static; text-align: center;}
+        .pincode{position: static; right: 15px;}
+        .totalamount{display: flex; align-items: center; justify-content: end;width: 23%;}
+        .addDeleteButton{margin-top:25px;alignment:right;}
+        .signature{margin-top:5px;text-align: center;}
+    </aura:html>
+    
+    <section role="dialog" tabindex="-1" aria-labelledby="modal-heading-01" aria-modal="true" aria-describedby="modal-content-id-1" class=" slds-fade-in-open">
+        <div class="slds-box--border slds-modal__menu">
+            <header class="slds-modal__header">
+                <div class="demo-only demo-only--sizing slds-card__header-title slds-grid slds-size_3-of-3 slds-wrap">
+                <div class="slds-col slds-size_2-of-12">
+                	<lightning:input class="slds-m-around--small"  label="Bill No" type="text" value="{!v.billrecords}"/>
+                </div>
+                <div class="slds-col slds-size_8-of-12 header">
+                	<h2 id="modal-heading-01" class="slds-app-launcher__tile-figure slds-chat-message__text_sneak-peek slds-section-title_divider slds-welcome-mat__tiles_info-only slds-text-heading_large slds-hyphenate"> Building Store</h2>
+                    <h5 class="address">Address-XYZ</h5>
+                	<h5 class="pincode">PinCode-XXXXX,   Mob-1234567890</h5>
+                </div>
+                <div class="slds-col slds-size_2-of-12 gstno">
+                    <h6>GST NO.<br/>IND25635212AW23</h6>
+                </div>
+                </div>
+            </header>
+            <div class="slds-app-launcher__tile slds-color__background_gray-5">
+                Customer Information
+            </div>
+            
+            <section>
+                <div class="demo-only demo-only--sizing slds-card__header-title slds-grid slds-size_3-of-3 slds-wrap"> 
+                    
+                    <div class="slds-col slds-size_4-of-12">
+                        <lightning:input class="slds-m-around--small"  label="Customer Name"  value="{!v.CustomerName}" required="true" type="text"/>
+                    </div>
+                    <div class="slds-col slds-size_4-of-12">
+                        <lightning:input class="slds-m-around--small"  label="Phone No."  value="{!v.Phone}" type="string"/>
+                    </div>
+                    <div class="slds-col slds-size_4-of-12">
+                        <lightning:input class="slds-m-around--small"  label="Email"  value="{!v.Email}" type="string"/>
+                    </div>
+                    
+                    
+                       <div class="slds-size_1-of-3">
+                            <lightning:input class="slds-m-around--small" type="datetime" name="input1" value="{!v.Datetime}"/>
+                        </div>
+                        <div class="slds-size_1-of-3">
+                        <lightning:input class="slds-m-around--small" label="Address" value="{!v.Address}"/>
+                        </div>
+                        <!--Text Rich Area Box, Comments-->
+                        <div class="slds-size_1-of-3">
+                            <lightning:textarea class="slds-form-element slds-m-around--small" id="CommentsId" label="Comments" value=""/>
+                        </div>
+                </div> 
+            </section>
+            <div class="slds-app-launcher__tile slds-color__background_gray-5">
+                Product Information 
+                <aura:if isTrue="{!v.buttonHide}">
+                	<div class="slds-size_1-of-4 slds-button_neutral slds-col--bump-left slds-size_1-of-4 slds-var-p-right_xx-small">
+                    	<lightning:button  aura:id="AddProduct" label="+ Add Product" variant="brand" onclick="{!c.addRow}" class="slds-builder-toolbar__actions slds-button slds-button_brand"/>
+                	</div>
+                </aura:if>     
+            </div>
+            
+            <section>
+                    <div class="container-fluid">        
+                        <table class="slds-table slds-table_bordered slds-table_cell-buffer slds-scrollable--y"> 
+                            <thead>
+                                <tr class="slds-text-title_caps">
+                                    <th scope="col">
+                                        <div class="slds-truncate">#</div>
+                                    </th>
+                                    <th scope="col">
+                                        <div class="slds-truncate" title="Product iteam">Product iteam</div>
+                                    </th>
+                                    <th scope="col">
+                                        <div class="slds-truncate"  title="Product Price">Product Price</div>
+                                    </th>
+                                    <th scope="col">
+                                        <div class="slds-truncate"  title="Product Quantity">Product Quantity</div>
+                                    </th>
+                                    <th scope="col">
+                                        <div class="slds-truncate"   title="Product Quantity">Total Price</div>
+                                    </th>
+                                    <th scope="col">
+                                        <div class="slds-truncate" title="Action">Action</div>
+                                    </th>
+                                </tr>
+                            </thead>   
+                            <tbody class="slds-section-title">      
+                                <aura:iteration items="{!v.CustomerDetailList}" var="acc" indexVar="index">
+                                    <tr>
+                                        <td> 
+                                            {!index + 1}
+                                        </td>
+                                        <td>
+                                            <lightning:input name="accName" type="text" label="Product iteam" value="{!acc.Product_iteam__c}" />
+                                        </td>
+                                        <td>
+                                            <lightning:input name="accNumber" type="Integer"   label="Product Price" value="{!acc.Product_Price__c}" />
+                                        </td>
+                                        <td>
+                                            <lightning:input name="accPhone" type="Integer"  label="Product Quantity" value="{!acc.Product_Quantity__c}" />
+                                        </td>
+                                        <td>
+                                            <lightning:input   type="Integer"  label="Total Price" onclick="{!c.multiplicationAction}" value="{!acc.Total_Price__c}"  />
+                                        </td>
+                                        <div class="addDeleteButton">
+                                        	<td>
+                                        		<lightning:icon  aura:id="AddProduct" iconName="utility:add" size="x-small" onclick="{!c.addRow}" />
+                                        	</td>
+                                        	<td>
+                                            	<a onclick="{!c.removeRow}" data-record="{!index}">
+                                                	<lightning:icon aura:id="removeRow" iconName="utility:delete" size="x-small" alternativeText="Delete"/>
+                                                	<span class="slds-assistive-text">Delete</span>
+                                            	</a>
+                                        	</td>
+                                       </div>
+                                    </tr>
+                                </aura:iteration>
+                            </tbody>
+                        </table>
+                    </div>
+                <aura:if isTrue="{!v.hideitemrow}">
+                	<footer class="slds-button--icon-warning slds-chat-event__agent-message slds-color__background_gray-6 slds-welcome-mat__tiles_info-only">
+                    	<div class="slds-border--right slds-grid">
+                        	<aura:if isTrue="{!v.buttonHideprint}">
+                        	<div class="slds-col slds-size_3-of-12">
+                                <lightning:button aura:id="Print" variant="brand" label="Print Billing" onclick="{!c.Print}" class="slds-app-launcher__tile slds-button slds-button_neutral slds-m-left_x-small"/>
+                                </div>             
+                        	</aura:if> 
+                        	<div class="slds-color-picker__summary-button slds-color-picker__swatch slds-form-element__label slds-no-flex">
+    							<lightning:input type="text" value="{!v.Signature}" label ="Signature"/>
+                            </div>
+                            <aura:if isTrue="{!v.buttonHideTotal}">
+                        	<div class="slds-col slds-size_3-of-12 totalamount">
+                            	<lightning:button variant="brand" label="Total Ammount" onclick="{!c.GrandTotalPriceMethod}" class="slds-app-launcher__tile slds-button slds-button_brand slds-m-right--x-small slds-p-horizontal--x-large"/>
+                        	</div>
+                            </aura:if>
+                        	<div class="slds-col slds-size_3-of-12 TotalPriceField right">
+                            	<lightning:input class="slds-accordion__summary-heading slds-color__text_gray-11" placeholder="Grand Total Price"  value="{!v.GrandTotalPrice}" type="Integer"/>
+                        	</div>
+                    	</div>
+                	</footer>
+                </aura:if>
+            </section>
+        </div>
+    </section>
+    
+    
+    
+</aura:component>
